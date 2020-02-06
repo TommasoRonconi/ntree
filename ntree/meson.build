@@ -12,13 +12,16 @@ ntree_lib = library( 'ntree',
                      [ 'src/ncell.cpp',
                        'src/ntree_ds.cpp' ],
        	 	     include_directories : [ inc_ntree,
+                                             inc_hilbert,
                                              inc_utl ],
-		     dependencies : [ utl_dep,
+		     dependencies : [ hilbert_dep,
+                                      utl_dep,
                                       gsl_dep ],
                      install : true )
 
 ntree_dep = declare_dependency( link_with : ntree_lib,
                                 include_directories : [ inc_ntree,
+                                                        inc_hilbert,
                                                         inc_utl ] )
 
 lib_headers += [ root + '/ntree/' + inc_dir + '/ncell.h',

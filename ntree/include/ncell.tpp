@@ -36,7 +36,7 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
     // finds iterator to last position for current cell
     auto stop { std::upper_bound( start, bucket.end(), ic,
 				  [&] ( const short & a, nparticle< dim > * b ){
-				    return a < hash_func( b->z_key );
+				    return a < hash_func( b->h_key );
 				  } ) };
     
     // compute lenght of sub-vector

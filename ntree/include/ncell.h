@@ -18,11 +18,11 @@ namespace sico {
 
       std::vector< double > coord = std::vector< double >( dim );
 
-      size_t z_key;
+      size_t h_key;
 
-      bool cmp_key ( const nparticle & a, const nparticle & b ) { return ( a.z_key < b.z_key ); }
+      bool cmp_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key < b.h_key ); }
 
-      bool eqv_key ( const nparticle & a, const nparticle & b ) { return ( a.z_key == b.z_key ); }
+      bool eqv_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key == b.h_key ); }
 
       bool eqv_pos ( const nparticle & a, const nparticle & b ) {
 
@@ -50,7 +50,6 @@ namespace sico {
       /// copy of 'value' for each element, thus it is less efficient.
       std::vector< std::unique_ptr< ncell > > sub_cell =
 	std::vector< std::unique_ptr< ncell > >( 1 << dim );
-      // { std::vector< std::unique_ptr< ncell > > ( std::bitset<>{ 0, dim } ) };
 
       std::unique_ptr< nparticle< dim > > particle = nullptr;
 
@@ -108,7 +107,7 @@ namespace sico {
 
       iterator & operator++ () {
 
-	current = current->find_next( current->particle->z_key );
+	current = current->find_next( current->particle->h_key );
 
 	return *this;
 

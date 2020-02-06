@@ -61,9 +61,9 @@ subdir( 'utilities' )
 # subdir( 'interpolator' )
 
 #######################################################################
-# FFTLog Wrap Lib
+# Hilbert-Curve Lib
 
-# subdir( 'fftlog_wrap' )
+subdir( 'hilbert_curve' )
 
 #######################################################################
 # N-Treee Lib

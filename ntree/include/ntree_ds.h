@@ -2,9 +2,10 @@
 #define __NTREE__
 
 #include <memory>
+#include <string>
 
 // #include <bit_manipulator.h>
-// #include <hilbert_curve.h>
+#include <hilbert_curve.h>
 #include <ncell.h>
 
 namespace sico {
@@ -19,6 +20,8 @@ namespace sico {
     public:
 
       ntree () = default;
+
+      ntree ( std::string input );
 
       ~ntree () = default;
 
@@ -36,10 +39,10 @@ namespace sico {
 
     }; // endclass ntree
 
+#include <ntree_ds.tpp>
+    
   } // endnamespace utl
   
 } // endnamespace sico
-
-#include <ntree_ds.tpp>
 
 #endif //__NTREE__
