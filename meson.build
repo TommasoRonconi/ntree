@@ -83,4 +83,4 @@ install_headers( lib_headers )
 #######################################################################
 # Testing
 
-# subdir( 'tests' )
+subdir( 'tests' )
