@@ -1,5 +1,20 @@
 // ===============================================================
 
+// template< const size_t dim >
+// nparticle< dim >::nparticle ( const std::vector< double > coord,
+// 			      const double side_lenght,
+// 			      const unsigned int depth ) {
+//   if ( depth >= 8 )
+//     throw sico_err::out_of_bounds( "required depth is not supported (> 8)!" );
+
+  
+
+// }
+
+// ===============================================================
+// ===============================================================
+// ===============================================================
+
 template< const size_t dim >
 void ncell< dim >::clear () {
 
@@ -31,7 +46,8 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
   auto start = bucket.begin();
 
   // this loop iterates on the 2^dimension sub-cells:
-  for ( short ic = 0; ic < sico::utl::bitset( 0, dim ); ++ic ) {
+  // for ( short ic = 0; ic < sico::utl::bitset( 0, dim ); ++ic ) {
+  for ( short ic = 0; ic < ( 1 << dim ); ++ic ) {
 
     // finds iterator to last position for current cell
     auto stop { std::upper_bound( start, bucket.end(), ic,
@@ -42,13 +58,13 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
     // compute lenght of sub-vector
     auto dist = std::distance( start, stop );
     
-    // std::cout << "\tlevel = " << _level << ", subcell = " << ic << ", distance = " << dist << "\n";
+    std::cout << "\tlevel = " << _level << ", subcell = " << ic << ", distance = " << dist << "\n";
     
     // if sub-vector not empty, dig deeper ( recursion! )
     if ( dist > 1 ) {
       
       // initialize the sub-cell
-      sub_cell[ic].reset( new ncell< dim > { _level - 1, this } );
+      sub_cell[ic].reset( new ncell< dim > { _level + 1, this } );
 
       // call recursion
       sub_cell[ic]->insert( std::vector< nparticle< dim > * > { start, stop } );
@@ -57,13 +73,13 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
     
     // set the particle if only one is contained in the sub-vector
     else if ( dist == 1 )
-      sub_cell[ic].reset( new ncell< dim > { *start, _level - 1, this } );
+      sub_cell[ic].reset( new ncell< dim > { *start, _level + 1, this } );
 
     // reset start iterator for next sub-cell
     start = stop;
     
   }
-  // std::cout << "check exit: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
+  std::cout << "check exit: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
 
 }
 

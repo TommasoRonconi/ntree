@@ -4,8 +4,11 @@ foreach _t : tests
 
 exe = executable( 'test_' + _t + '.x',
                   [ 'test_' + _t + '.cpp' ],
-                  include_directories : [ inc_ntree ],
-                  dependencies : [ utl_dep,
+                  include_directories : [ inc_ntree,
+                                          inc_hilbert ],
+                  dependencies : [ hilbert_dep,
+                                   ntree_dep,
+                                   utl_dep,
                                    gsl_dep ],
                   install : true,
                   install_dir : meson.current_source_dir() )

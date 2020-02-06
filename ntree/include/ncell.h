@@ -7,7 +7,9 @@
 #include <algorithm>
 #include <bitset>
 
+// #include <error_handling.h>
 #include <bit_manipulator.h>
+#include <hilbert_curve.h>
 
 namespace sico {
 
@@ -16,9 +18,15 @@ namespace sico {
     template < const size_t dim = 2 >
     struct nparticle {
 
-      std::vector< double > coord = std::vector< double >( dim );
+      std::vector< size_t > coord = std::vector< size_t >( dim );
 
       size_t h_key;
+
+      // nparticle () = default;
+
+      // nparticle ( const std::vector< double > coord, const size_t key );
+
+      // ~nparticle () = default;
 
       bool cmp_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key < b.h_key ); }
 
@@ -55,6 +63,7 @@ namespace sico {
 
       //public:
 
+      // this serves as default constructor:
       ncell ( std::size_t level = 0, ncell * parent = nullptr )
 	: _level{ level }, _parent { parent } {}
 
@@ -74,7 +83,8 @@ namespace sico {
 
       short hash_func ( const size_t key ) {
 
-	return bits( key, dim * ( _level - 1 ), dim );
+	return bits( key, dim * ( _level ), dim );
+	// return bits( key, dim * ( _level - 1 ), dim );
 
       }
 

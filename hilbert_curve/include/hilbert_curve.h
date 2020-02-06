@@ -50,6 +50,15 @@ struct hilbert_coord_t {
   bitsetfix & operator[] ( std::size_t idx ) { return _container[ idx ]; }
   const bitsetfix & operator[] ( std::size_t idx ) const { return _container[ idx ]; }
 
+  std::vector< std::size_t > operator() () {
+
+    std::vector< std::size_t > container;
+    for ( auto&& _c : _container )
+      container.push_back( _c.to_ulong() );
+    return container;
+
+  }
+
   size_t operator() ( const size_t idx ) { return _container[ idx ].to_ulong(); }
   // const size_t operator() ( const size_t idx ) const { return _container[ idx ].to_ulong(); }
 
