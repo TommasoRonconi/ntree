@@ -56,8 +56,10 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & buc
     }
     
     // set the particle if only one is contained in the sub-vector
-    else if ( dist == 1 )
+    else if ( dist == 1 ) {
       sub_cell[ic].reset( new ncell< dim, depth > { *start, _level + 1, this } );
+      // std::cout << "set at lev =\t" << _level << "\tin subcell\t" << ic << "\n";
+    }
 
     // reset start iterator for next sub-cell
     start = stop;
@@ -72,9 +74,8 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & buc
 template< const size_t dim, const size_t depth >
 ncell< dim, depth > * ncell< dim, depth >::find ( const size_t key ) {
 
-  // if current cell contains particle return this
-  if ( particle )
-    return this;
+  // if current cell contains particle return this if the key is right
+  if ( particle && ( particle->h_key == key ) ) return this;
 
   // otherwise search in the right sub-cell, by using
   // hash function for current level
@@ -104,7 +105,7 @@ ncell< dim, depth > * ncell< dim, depth >::find_next ( const size_t key ) {
 
     // search in sub-cells, starting from next one
     short ic = high_lev->hash_func( key ) + 1;
-    for (; ic < bitset( 0, dim ); ++ic ) 
+    for ( ; ic < ( 1 << dim ); ++ic ) 
       if ( high_lev->sub_cell[ ic ] )
 	return high_lev->sub_cell[ ic ]->leftmost();
 

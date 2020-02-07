@@ -8,21 +8,21 @@
 #include <string>
 
 // internal includes
-// #include <error_handling.h>
+#include <error_handling.h>
 
 // ===================================== TEMPORARY =======================================
 
-namespace sico_err {
+// namespace sico_err {
   
-  struct size_invalid {
+//   struct size_invalid {
 
-    std::string message;
-    size_invalid ( const std::string & s ) : message{ s } {}
+//     std::string message;
+//     size_invalid ( const std::string & s ) : message{ s } {}
       
-  };
+//   };
 
 
-} // endnamespace sico_err
+// } // endnamespace sico_err
 
 // =======================================================================================
 
@@ -50,6 +50,8 @@ struct hilbert_coord_t {
   bitsetfix & operator[] ( std::size_t idx ) { return _container[ idx ]; }
   const bitsetfix & operator[] ( std::size_t idx ) const { return _container[ idx ]; }
 
+  // push-backing here should not cost anything since the usual number
+  // of push-backs should be in the order <~4-5 at most (==3 for 3d space)
   std::vector< std::size_t > operator() () {
 
     std::vector< std::size_t > container;

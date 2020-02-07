@@ -10,8 +10,7 @@ exe = executable( 'test_' + _t + '.x',
                                    ntree_dep,
                                    utl_dep,
                                    gsl_dep ],
-                  install : true,
-                  install_dir : meson.current_source_dir() )
+                  install : false )
 
 # test( _t + '_run_and_diff',
 #       compare,

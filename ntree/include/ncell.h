@@ -19,6 +19,7 @@ namespace sico {
     struct nparticle {
 
       std::vector< size_t > coord = std::vector< size_t >( dim );
+      std::vector< double > pos = std::vector< double >( dim );
 
       size_t h_key;
 
@@ -78,16 +79,22 @@ namespace sico {
       short hash_func ( const size_t key ) {
 
 	return bits( key, dim * ( depth - _level - 1 ), dim );
-	// return bits( key, dim * ( _level - 1 ), dim );
 
       }
 
+      // clears up everything from the current cell and below
       void clear ();
 
       ncell * find ( const size_t key );
 
+      // starting from a known cell gets you to the next occupied one
+      // (Warning: this might mess-up stuff if the key is not selected accurately,
+      //           no error nor exception is raised independently of the key provided
+      //           but behaviour is undefined in case the key is not within the range)
       ncell * find_next ( const size_t key );
 
+      // starting from the current cell gets you to the
+      // first occupied one, following the hilbert ordering
       ncell * leftmost ();
 
     }; // endclass ncell
