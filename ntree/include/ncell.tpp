@@ -1,22 +1,7 @@
 // ===============================================================
 
-// template< const size_t dim >
-// nparticle< dim >::nparticle ( const std::vector< double > coord,
-// 			      const double side_lenght,
-// 			      const unsigned int depth ) {
-//   if ( depth >= 8 )
-//     throw sico_err::out_of_bounds( "required depth is not supported (> 8)!" );
-
-  
-
-// }
-
-// ===============================================================
-// ===============================================================
-// ===============================================================
-
-template< const size_t dim >
-void ncell< dim >::clear () {
+template< const size_t dim, const size_t depth >
+void ncell< dim, depth >::clear () {
 
   // if current cell contains a particle
   // there are no deeper cells
@@ -38,15 +23,14 @@ void ncell< dim >::clear () {
 
 // ===============================================================
 
-template< const size_t dim >
-void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
+template< const size_t dim, const size_t depth >
+void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
 
   // std::cout << "check enter: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
 
   auto start = bucket.begin();
 
-  // this loop iterates on the 2^dimension sub-cells:
-  // for ( short ic = 0; ic < sico::utl::bitset( 0, dim ); ++ic ) {
+  // this loop iterates on the 2^dim sub-cells:
   for ( short ic = 0; ic < ( 1 << dim ); ++ic ) {
 
     // finds iterator to last position for current cell
@@ -58,13 +42,13 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
     // compute lenght of sub-vector
     auto dist = std::distance( start, stop );
     
-    std::cout << "\tlevel = " << _level << ", subcell = " << ic << ", distance = " << dist << "\n";
+    // std::cout << "\tlevel = " << _level << ", subcell = " << ic << ", distance = " << dist << "\n";
     
     // if sub-vector not empty, dig deeper ( recursion! )
     if ( dist > 1 ) {
       
       // initialize the sub-cell
-      sub_cell[ic].reset( new ncell< dim > { _level + 1, this } );
+      sub_cell[ic].reset( new ncell< dim, depth > { _level + 1, this } );
 
       // call recursion
       sub_cell[ic]->insert( std::vector< nparticle< dim > * > { start, stop } );
@@ -73,20 +57,20 @@ void ncell< dim >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
     
     // set the particle if only one is contained in the sub-vector
     else if ( dist == 1 )
-      sub_cell[ic].reset( new ncell< dim > { *start, _level + 1, this } );
+      sub_cell[ic].reset( new ncell< dim, depth > { *start, _level + 1, this } );
 
     // reset start iterator for next sub-cell
     start = stop;
     
   }
-  std::cout << "check exit: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
+  // std::cout << "check exit: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
 
 }
 
 // ===============================================================
 
-template< const size_t dim >
-ncell< dim > * ncell< dim >::find ( const size_t key ) {
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::find ( const size_t key ) {
 
   // if current cell contains particle return this
   if ( particle )
@@ -109,8 +93,8 @@ ncell< dim > * ncell< dim >::find ( const size_t key ) {
 
 // ===============================================================
 
-template< const size_t dim >
-ncell< dim > * ncell< dim >::find_next ( const size_t key ) {
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::find_next ( const size_t key ) {
 
   // go to higher level
   auto high_lev = _parent;
@@ -138,8 +122,8 @@ ncell< dim > * ncell< dim >::find_next ( const size_t key ) {
 
 // ===============================================================
 
-template< const size_t dim >
-ncell< dim > * ncell< dim >::leftmost () {
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::leftmost () {
 
   // if current cell contains particle,
   // there'are no deeper cells
@@ -152,8 +136,9 @@ ncell< dim > * ncell< dim >::leftmost () {
     if ( sub_cell[ ic ] )
       return sub_cell[ ic ]->leftmost();
 
-  // think whether you need this:
-  // return nullptr;
+  // if nor this cell nor its sub-cells contain
+  // any particle, return null
+  return nullptr;
 
 }
 

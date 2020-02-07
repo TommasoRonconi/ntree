@@ -22,12 +22,6 @@ namespace sico {
 
       size_t h_key;
 
-      // nparticle () = default;
-
-      // nparticle ( const std::vector< double > coord, const size_t key );
-
-      // ~nparticle () = default;
-
       bool cmp_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key < b.h_key ); }
 
       bool eqv_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key == b.h_key ); }
@@ -45,7 +39,7 @@ namespace sico {
   
     }; // endstruct nparticle
 
-    template < const size_t dim = 2 > 
+    template < const size_t dim = 2, const size_t depth = 2 > 
     struct ncell {
 
       std::size_t _level;
@@ -83,7 +77,7 @@ namespace sico {
 
       short hash_func ( const size_t key ) {
 
-	return bits( key, dim * ( _level ), dim );
+	return bits( key, dim * ( depth - _level - 1 ), dim );
 	// return bits( key, dim * ( _level - 1 ), dim );
 
       }
@@ -98,22 +92,20 @@ namespace sico {
 
     }; // endclass ncell
 
-    // template< class T >
-    template< const size_t dim = 2 >
+    template< const size_t dim = 2, const size_t depth = 2 >
     class iterator {
 
-      // T * current;
-      ncell< dim > * current;
+      ncell< dim, depth > * current;
 
     public:
 
       iterator () noexcept = default;
 
-      iterator ( ncell< dim > * cl ) : current{ cl } {}
+      iterator ( ncell< dim, depth > * cl ) : current{ cl } {}
 
       ~iterator () noexcept = default;
 
-      ncell< dim > * operator*() { return current; }
+      ncell< dim, depth > * operator*() { return current; }
 
       iterator & operator++ () {
 
