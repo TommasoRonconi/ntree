@@ -18,12 +18,12 @@ namespace sico {
     class ntree {
 
       // private members regulating the geometry of space:
-      const double _boxmin;
-      const double _boxmax;
-      const double _lenght;
-      const double _expand;
-      const std::size_t _size = 0;
-      const hilbert_curve< dim, depth > _hc {};
+      double _boxmin = 0.;
+      double _boxmax = 1.;
+      double _lenght = 1.;
+      double _expand = 1.;
+      std::size_t _size = 0;
+      hilbert_curve< dim, depth > _hc {};
       
       std::unique_ptr< ncell< dim, depth > > root = nullptr;
 
@@ -39,17 +39,21 @@ namespace sico {
 
       ~ntree () = default;
 
-      // iterator begin() { return root->leftmost(); }
+      typename ncell< dim, depth >::iterator begin() { return root->leftmost(); }
 
-      // iterator end() { return iterator{ nullptr }; }
+      typename ncell< dim, depth >::iterator end() {
+	
+	return typename ncell< dim, depth >::iterator{ nullptr };
+	
+      }
 
       void clear () { root.reset(); return; }
+      
+      typename ncell< dim, depth >::iterator find ( const size_t key ) {
 
-      // iterator find ( const size_t key ) {
+      	return typename ncell< dim, depth >::iterator{ root->find( key ) };
 
-      // 	return iterator{ root->find( key ) };
-
-      // }
+      }
 
     }; // endclass ntree
 

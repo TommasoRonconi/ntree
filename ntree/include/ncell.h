@@ -19,7 +19,7 @@ namespace sico {
     template < const size_t dim = 2, const size_t depth = 2 >
     struct nparticle {
 
-      hilbert_coord_t< dim, depth > h_coord {}; //= hilbert_coord_t< dim, depth >{};
+      hilbert_coord_t< dim, depth > h_coord {};
       
       std::vector< double > pos = std::vector< double >( dim );
 
@@ -36,7 +36,7 @@ namespace sico {
       {
 
       	if ( position.size() != dim )
-      	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
+      	  throw sico_err::size_invalid( "Miss-matching dimension between template value " +
       					std::to_string( dim ) + " and size of position.size = " +
       					std::to_string( position.size() ) );	
 
@@ -119,32 +119,52 @@ namespace sico {
       // first occupied one, following the hilbert ordering
       ncell * leftmost ();
 
+      // template
+      class iterator {
+
+	ncell * current;
+
+      public:
+
+	iterator () noexcept = default;
+
+	iterator ( ncell * cl ) : current{ cl } {}
+
+	~iterator () noexcept = default;
+
+	ncell * operator*() { return current; }
+      
+	ncell * operator->() const { return current;  }
+
+	iterator & operator++ () {
+
+	  current = current->find_next( current->particle->h_key );
+
+	  return *this;
+
+	}
+  
+	/**
+	 *  @brief Logical-equality operator overload
+	 *
+	 *  @param other the r-value to be compared
+	 *
+	 *  @return bool, true if the two iterator contain the same pointer, false if not
+	 */
+	bool operator==( const iterator& other ) { return current == other.current; }
+  
+	/**
+	 *  @brief Logical-inequality operator overload
+	 *
+	 *  @param other the r-value to be compared
+	 *
+	 *  @return Implementation is done in terms of overloaded equality operator
+	 */
+	bool operator!=( const iterator& other ) { return !( *this == other ); }
+
+      }; // endclass iterator
+
     }; // endclass ncell
-
-    template< const size_t dim = 2, const size_t depth = 2 >
-    class iterator {
-
-      ncell< dim, depth > * current;
-
-    public:
-
-      iterator () noexcept = default;
-
-      iterator ( ncell< dim, depth > * cl ) : current{ cl } {}
-
-      ~iterator () noexcept = default;
-
-      ncell< dim, depth > * operator*() { return current; }
-
-      iterator & operator++ () {
-
-	current = current->find_next( current->particle->h_key );
-
-	return *this;
-
-      }
-
-    }; // endclass iterator
 
 #include <ncell.tpp>
 

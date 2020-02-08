@@ -1,4 +1,4 @@
-tests = [ 'ncell' ] # , 'ntree' ]
+tests = [ 'ncell', 'ntree_ds' ]
 
 foreach _t : tests
 
@@ -9,6 +9,7 @@ exe = executable( 'test_' + _t + '.x',
                   dependencies : [ hilbert_dep,
                                    ntree_dep,
                                    utl_dep,
+                                   omp_dep,
                                    gsl_dep ],
                   install : false )
 

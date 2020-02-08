@@ -10,10 +10,11 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
 {
 
   // some preliminary checks on dimensions of the input coordinates vector
-  if ( coords.size() > dim * ( 1 << depth ) )
+  if ( _size > dim * ( 1 << depth ) )
     throw sico_err::size_invalid( "The provided vector of coordinates is too big ( size = " +
 				  std::to_string( coords.size() ) +
-				  " ) for your choice of the template parameters." );
+				  " > " + std::to_string( dim * ( 1 << depth ) ) +
+				  ") for your choice of the template parameters." );
   if ( coords.size() % dim > 0 )
     throw sico_err::size_invalid( "The provided vector of coordinates is not " +
 				  std::to_string( dim ) + "-dimensional!" );
@@ -23,19 +24,20 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
 
   // consider off-set to center the hilbert grid:
   double locmin = boxmin + 0.5 * _lenght;
-  
+
   // this fills the bucket with n-dimensional particles:
   // ( multi-threading friendly )
 #pragma omp parallel for
   for ( size_t ii = 0; ii < _size; ++ii ) {
-
+    
     // convert coords (floating point) to hilbert positions (hilbert_coord_t)
     hilbert_coord_t< dim, depth > hpos;
     for ( size_t jj = 0; jj < dim; ++jj )
       hpos[ jj ] = std::size_t( ( coords[ ii * dim + jj ] - locmin ) * _expand );
 
     // insert new particle in bucket by getting key on the fly:
-    bucket[ ii ] = new nparticle< dim, depth > { hpos, coords,
+    bucket[ ii ] = new nparticle< dim, depth > { hpos, { coords.begin() + ( ii * dim),
+							 coords.begin() + ( ii * dim) + dim },
 						 _hc.get_key( _hc.get_grid( hpos ) ).to_ulong() };
     
   } // back to serial.
