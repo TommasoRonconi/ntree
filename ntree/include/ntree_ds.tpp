@@ -35,7 +35,7 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
       hpos[ jj ] = std::size_t( ( coords[ ii * dim + jj ] - locmin ) * _expand );
 
     // insert new particle in bucket by getting key on the fly:
-    bucket[ ii ] = new nparticle< dim, depth > { hpos,
+    bucket[ ii ] = new nparticle< dim, depth > { hpos, coords,
 						 _hc.get_key( _hc.get_grid( hpos ) ).to_ulong() };
     
   } // back to serial.
