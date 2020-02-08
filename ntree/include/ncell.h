@@ -25,49 +25,20 @@ namespace sico {
 
       std::size_t h_key;
 
-      // nparticle ( const std::vector< std::size_t > & coord,
-      // 		  const std::vector< double > & position,
-      // 		  const std::size_t & key ) : h_coord{ coord.begin(), coord.begin() + dim },
-      // 					      pos{ position },
-      // 					      h_key{ key }
-      // {
-
-      // 	if ( coord.size() != dim )
-      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value = " +
-      // 					std::to_string( dim ) + " and size of coord = " +
-      // 					std::to_string( coord.size() ) );
-
-      // 	if ( position.size() != dim )
-      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
-      // 					std::to_string( dim ) + " and size of position.size = " +
-      // 					std::to_string( position.size() ) );
-
-      // }
-
       nparticle ( const hilbert_coord_t< dim, depth> & coord,
 		  const std::size_t & key ) : h_coord{ coord }, h_key{ key } {}
 
-      // nparticle ( const std::vector< std::size_t > & coord,
-      // 		  const std::size_t & key ) : h_key{ key }
-      // {
-
-      // 	if ( coord.size() != dim )
-      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value = " +
-      // 					std::to_string( dim ) + " and size of coord = " +
-      // 					std::to_string( coord.size() ) );
-
-      // 	// h_coord = hilbert_coord_t< dim, depth >::vecbitset( coord.begin(), coord.begin() + dim );
-
-      // }
-
-      nparticle ( const std::vector< double > & position,
-		  const hilbert_curve< dim, depth > & hc ) : pos{ position }
+      nparticle ( const hilbert_coord_t< dim, depth> & coord,
+		  const std::vector< double > & position,
+		  const std::size_t & key ) : h_coord{ coord },
+					      pos{ position },
+					      h_key{ key }
       {
 
-	if ( position.size() != dim )
-	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
-					std::to_string( dim ) + " and size of position.size = " +
-					std::to_string( position.size() ) );
+      	if ( position.size() != dim )
+      	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
+      					std::to_string( dim ) + " and size of position.size = " +
+      					std::to_string( position.size() ) );	
 
       }
 
