@@ -16,6 +16,7 @@ ntree_lib = library( 'ntree',
                                              inc_utl ],
 		     dependencies : [ hilbert_dep,
                                       utl_dep,
+                                      omp_dep,
                                       gsl_dep ],
                      install : true )
 

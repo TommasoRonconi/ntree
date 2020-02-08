@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <string>
+#include <initializer_list>
 
 // #include <bit_manipulator.h>
 #include <error_handling.h>
@@ -21,6 +22,8 @@ namespace sico {
       const double _boxmax;
       const double _lenght;
       const double _expand;
+      const std::size_t _size = 0;
+      const hilbert_curve< dim, depth > _hc {};
       
       std::unique_ptr< ncell< dim, depth > > root = nullptr;
 

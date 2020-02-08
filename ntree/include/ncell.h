@@ -6,6 +6,7 @@
 #include <cmath>
 #include <algorithm>
 #include <bitset>
+#include <string>
 
 // #include <error_handling.h>
 #include <bit_manipulator.h>
@@ -15,13 +16,62 @@ namespace sico {
 
   namespace utl {
 
-    template < const size_t dim = 2 >
+    template < const size_t dim = 2, const size_t depth = 2 >
     struct nparticle {
 
-      std::vector< size_t > coord = std::vector< size_t >( dim );
+      hilbert_coord_t< dim, depth > h_coord {}; //= hilbert_coord_t< dim, depth >{};
+      
       std::vector< double > pos = std::vector< double >( dim );
 
-      size_t h_key;
+      std::size_t h_key;
+
+      // nparticle ( const std::vector< std::size_t > & coord,
+      // 		  const std::vector< double > & position,
+      // 		  const std::size_t & key ) : h_coord{ coord.begin(), coord.begin() + dim },
+      // 					      pos{ position },
+      // 					      h_key{ key }
+      // {
+
+      // 	if ( coord.size() != dim )
+      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value = " +
+      // 					std::to_string( dim ) + " and size of coord = " +
+      // 					std::to_string( coord.size() ) );
+
+      // 	if ( position.size() != dim )
+      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
+      // 					std::to_string( dim ) + " and size of position.size = " +
+      // 					std::to_string( position.size() ) );
+
+      // }
+
+      nparticle ( const hilbert_coord_t< dim, depth> & coord,
+		  const std::size_t & key ) : h_coord{ coord }, h_key{ key } {}
+
+      // nparticle ( const std::vector< std::size_t > & coord,
+      // 		  const std::size_t & key ) : h_key{ key }
+      // {
+
+      // 	if ( coord.size() != dim )
+      // 	  throw sico_err::size_invalid( "Miss-matching dimension between template value = " +
+      // 					std::to_string( dim ) + " and size of coord = " +
+      // 					std::to_string( coord.size() ) );
+
+      // 	// h_coord = hilbert_coord_t< dim, depth >::vecbitset( coord.begin(), coord.begin() + dim );
+
+      // }
+
+      nparticle ( const std::vector< double > & position,
+		  const hilbert_curve< dim, depth > & hc ) : pos{ position }
+      {
+
+	if ( position.size() != dim )
+	  throw sico_err::size_invalid( "Miss-matching dimension between template value" +
+					std::to_string( dim ) + " and size of position.size = " +
+					std::to_string( position.size() ) );
+
+      }
+
+      ~nparticle () = default;
 
       bool cmp_key ( const nparticle & a, const nparticle & b ) { return ( a.h_key < b.h_key ); }
 
@@ -54,7 +104,7 @@ namespace sico {
       std::vector< std::unique_ptr< ncell > > sub_cell =
 	std::vector< std::unique_ptr< ncell > >( 1 << dim );
 
-      std::unique_ptr< nparticle< dim > > particle = nullptr;
+      std::unique_ptr< nparticle< dim, depth > > particle = nullptr;
 
       //public:
 
@@ -62,7 +112,8 @@ namespace sico {
       ncell ( std::size_t level = 0, ncell * parent = nullptr )
 	: _level{ level }, _parent { parent } {}
 
-      ncell ( nparticle< dim > * new_particle, std::size_t level = 0, ncell * parent = nullptr )
+      ncell ( nparticle< dim, depth > * new_particle,
+	      std::size_t level = 0, ncell * parent = nullptr )
 	: _level{ level }, _parent { parent } {
 
 	  particle.reset( new_particle );
@@ -74,7 +125,7 @@ namespace sico {
       // to implement this, need to overload operator- in class iterator:
       // size_t size () { return end() - begin(); }
   
-      void insert ( const std::vector< nparticle< dim > * > & parts );
+      void insert ( const std::vector< nparticle< dim, depth > * > & parts );
 
       short hash_func ( const size_t key ) {
 

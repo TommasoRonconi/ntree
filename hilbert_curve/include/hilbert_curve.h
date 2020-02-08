@@ -10,20 +10,6 @@
 // internal includes
 #include <error_handling.h>
 
-// ===================================== TEMPORARY =======================================
-
-// namespace sico_err {
-  
-//   struct size_invalid {
-
-//     std::string message;
-//     size_invalid ( const std::string & s ) : message{ s } {}
-      
-//   };
-
-
-// } // endnamespace sico_err
-
 // =======================================================================================
 
 
@@ -62,9 +48,9 @@ struct hilbert_coord_t {
   }
 
   size_t operator() ( const size_t idx ) { return _container[ idx ].to_ulong(); }
-  // const size_t operator() ( const size_t idx ) const { return _container[ idx ].to_ulong(); }
+  size_t operator() ( const size_t idx ) const { return _container[ idx ].to_ulong(); }
 
-  size_t size () { return dim; }
+  size_t size () const { return dim; }
 
 private:
 
@@ -130,16 +116,16 @@ public:
 
   ~hilbert_curve () = default;
 
-  std::bitset< dim * depth > get_key ( const hilbert_coord_t< dim, depth > & xx );
+  std::bitset< dim * depth > get_key ( const hilbert_coord_t< dim, depth > & xx ) const;
 
-  hilbert_coord_t< dim, depth > get_axes ( const hilbert_coord_t< dim, depth > & xx );
+  hilbert_coord_t< dim, depth > get_axes ( const hilbert_coord_t< dim, depth > & xx ) const;
 
-  hilbert_coord_t< dim, depth > get_grid ( const hilbert_coord_t< dim, depth > & xx );
+  hilbert_coord_t< dim, depth > get_grid ( const hilbert_coord_t< dim, depth > & xx ) const;
   
 }; // endclass hilbert_curve
 
 template < const size_t dim, const size_t depth >
-std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_coord_t< dim, depth > & xx ) {
+std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_coord_t< dim, depth > & xx ) const {
 
   std::bitset< dim * depth > key { size_t( 0 ) };
   int levkey = _levhilbert - 1;
@@ -161,7 +147,7 @@ std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_
 
 template < const size_t dim, const size_t depth >
 hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_axes ( const hilbert_coord_t< dim,
-								      depth > & xx ) {
+								      depth > & xx ) const {
 
   hilbert_coord_t< dim, depth > yy = xx;
   hilbert_curve::bitsetfix N { 2 << ( depth - 1 ) }, P, Q, t, one { 1 };
@@ -191,7 +177,7 @@ hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_axes ( const hilb
 
 template < const size_t dim, const size_t depth >
 hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_grid ( const hilbert_coord_t< dim,
-								      depth > & xx ) {
+								      depth > & xx ) const {
 
   hilbert_coord_t< dim, depth > yy = xx;
   

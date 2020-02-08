@@ -10,12 +10,15 @@ inc_hilbert = include_directories( inc_dir )
 
 hilbert_lib = library( 'hilbert',
                        [ 'src/hilbert_curve.cpp' ],
-       	 	       include_directories : [ inc_hilbert ],
-		       # dependencies : [ gsl_dep ],
+       	 	       include_directories : [ inc_hilbert,
+                                               inc_utl ],
+		       dependencies : [ utl_dep,
+                                        gsl_dep ],
                        install : true )
 
 hilbert_dep = declare_dependency( link_with : hilbert_lib,
-                                  include_directories : [ inc_hilbert ] )
+                                  include_directories : [ inc_hilbert,
+                                                          inc_utl ] )
 
 lib_headers += [ root + '/hilbert_curve/' + inc_dir + '/hilbert_curve.h' ]
 

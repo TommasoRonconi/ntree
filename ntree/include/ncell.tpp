@@ -24,7 +24,7 @@ void ncell< dim, depth >::clear () {
 // ===============================================================
 
 template< const size_t dim, const size_t depth >
-void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & bucket ) {
+void ncell< dim, depth >::insert ( const std::vector< nparticle< dim, depth > * > & bucket ) {
 
   // std::cout << "check enter: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
 
@@ -35,7 +35,7 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & buc
 
     // finds iterator to last position for current cell
     auto stop { std::upper_bound( start, bucket.end(), ic,
-				  [&] ( const short & a, nparticle< dim > * b ){
+				  [&] ( const short & a, nparticle< dim, depth > * b ){
 				    return a < hash_func( b->h_key );
 				  } ) };
     
@@ -51,7 +51,7 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim > * > & buc
       sub_cell[ic].reset( new ncell< dim, depth > { _level + 1, this } );
 
       // call recursion
-      sub_cell[ic]->insert( std::vector< nparticle< dim > * > { start, stop } );
+      sub_cell[ic]->insert( std::vector< nparticle< dim, depth > * > { start, stop } );
       
     }
     
