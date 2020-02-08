@@ -31,6 +31,9 @@ int main () {
 	_c->particle->h_coord( 0 ) << "\t" <<
 	_c->particle->h_coord( 1 ) << "\t" <<
 	_c->particle->h_key << "\n";
+
+    auto cell = tree2d.find( 3 );
+    std::cout << "check tree.find( 3 ):\t" << cell->particle->h_key << " (should be 3)\n";
     
   }
   catch ( sico_err::size_invalid er ) {
