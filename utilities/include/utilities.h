@@ -97,6 +97,35 @@ namespace sico {
 
   namespace utl {
 
+
+    /**
+     * @brief Fast version of pow() for integers.
+     *        Benchmark elevating 2**exp:
+     *          - time bitshift:   5.226 nsec
+     *          - time ipow:	  23.267 nsec
+     *          - time pow:	 303.147 nsec
+     *        ( note: program was compiled with -lm -ffast-math )
+     *               
+     * @param base the integer base of the exponential
+     *
+     * @param exp the integer exponent of the exponential 
+     *
+     * @return the exact value of base**exp
+     */
+    inline int ipow( int base, int exp )
+    {
+      
+      int result = 1;
+      for (;;) {
+	  if ( exp & 1 ) result *= base;
+	  exp >>= 1;
+	  if ( !exp ) break;
+	  base *= base;
+	}
+
+      return result;
+    }
+
     /**
      * @class Structure to handle functions to be integrated with gsl
      */

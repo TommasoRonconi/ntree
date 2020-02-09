@@ -6,6 +6,7 @@
 #include <initializer_list>
 
 // #include <bit_manipulator.h>
+#include <utilities.h>
 #include <error_handling.h>
 #include <hilbert_curve.h>
 #include <ncell.h>
@@ -26,6 +27,11 @@ namespace sico {
       hilbert_curve< dim, depth > _hc {};
       
       std::unique_ptr< ncell< dim, depth > > root = nullptr;
+
+      std::vector< size_t > _keys_from_perm ( const std::vector< std::size_t > & arr,
+					      const size_t lenght );
+
+      // hilbert_coord_t< dim, depth > _coord_to_hpos ( std::vector< double > & coords );
 
     public:
 
@@ -54,6 +60,20 @@ namespace sico {
       	return typename ncell< dim, depth >::iterator{ root->find( key ) };
 
       }
+
+      typename ncell< dim, depth >::iterator find ( const std::vector< double > & coords ) {
+
+	// find hilbert key from float position:
+	hilbert_coord_t< dim, depth > hpos;
+	for ( size_t jj = 0; jj < dim; ++jj )
+	  hpos[ jj ] = std::size_t( ( coords[ jj ] - _boxmin ) * _expand );
+
+	// use internal find( key ):
+	return find( _hc.get_key( _hc.get_grid( hpos ) ).to_ulong() );
+	
+      }
+
+      std::vector< std::size_t > find ( const std::vector< double > & coords, const double rad );
 
     }; // endclass ntree
 

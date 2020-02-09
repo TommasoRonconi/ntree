@@ -21,6 +21,10 @@ int main () {
   
   // check build-tree constructor
   try {
+
+    // =============================================================
+    // c.tor
+    
     sico::utl::ntree< dim, depth > tree2d { coord, 0., 4. };
 
     // for ( auto it = tree2d.begin(); it != tree2d.end(); ++it ) 
@@ -32,8 +36,35 @@ int main () {
 	_c->particle->h_coord( 1 ) << "\t" <<
 	_c->particle->h_key << "\n";
 
+    // =============================================================
+    // find key
+
     auto cell = tree2d.find( 3 );
     std::cout << "check tree.find( 3 ):\t" << cell->particle->h_key << " (should be 3)\n";
+
+    // =============================================================
+    // find position:
+
+    cell = tree2d.find( { 1.7, 2.3 } );
+    if ( *cell ) 
+      std::cout << "check tree.find( { 1.7, 2.3 } ):\t" << cell->particle->h_key << " (this doesn't happen)\n";
+    else
+      std::cout << "check tree.find( { 1.7, 2.3 } ):\tok!\n";
+    cell = tree2d.find( { 0.7, 1.61 } );
+    if ( *cell )
+      std::cout << "check tree.find( { 0.7, 1.61 } ):\t" << cell->particle->h_key << " (this should be 3)\n";
+    else
+      std::cout << "check tree.find( { 0.7, 1.61 } ):\tNOT ok!\n";
+
+    // =============================================================
+    // find in radius:
+
+    auto vect = tree2d.find( { 0.7, 2.3 }, 0.8 );
+
+    std::cout << "\nkeys found:\t" << vect.size() << "\n";
+    for ( auto && _k : vect )
+      std::cout << _k << "\t";
+    std::cout << "( should be 3, 4, 10 )\n";
     
   }
   catch ( sico_err::size_invalid er ) {
