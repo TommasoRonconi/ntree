@@ -1,0 +1,20 @@
+from ctypes import *
+
+###########################################################################
+################################ NTREE WRAP ###############################
+###########################################################################
+    
+lib_ntree = CDLL( "@NTREE_WRAP_PATH@" )
+
+# ================
+# == 2D, 8bits ==
+# ================
+
+# Curve constructors
+lib_ntree.create_ntree_2d_8b.argtypes = [ POINTER( c_double ),
+                                          c_double, c_double ]
+lib_ntree.create_ntree_2d_8b.restype = c_void_p
+
+# Curve destructors
+lib_ntree.free_ntree_2d_8b.argtypes = [ c_void_p ]
+lib_ntree.free_ntree_2d_8b.restype = c_void_p
