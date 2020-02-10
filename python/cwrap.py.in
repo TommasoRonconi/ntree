@@ -1,20 +1,114 @@
 from ctypes import *
+import numpy
 
 ###########################################################################
 ################################ NTREE WRAP ###############################
 ###########################################################################
     
+class c_nparticle_t ( Structure ) :
+    _fields_ = [
+        ( "coord", POINTER( c_double ) ),
+        ( "size", c_size_t ),
+        ( "key", c_size_t )
+    ]
+
+    def get_coords ( self ) :
+
+        ret = ( c_double * self.size )( *[ self.coord[ ii ] for ii in range( self.size ) ] )
+        return numpy.array( ret )
+
+class c_int_vector_t ( Structure ) :
+    _fields_ = [
+        ( "vec", POINTER( c_size_t ) ),
+        ( "size", c_size_t )
+    ]
+
 lib_ntree = CDLL( "@NTREE_WRAP_PATH@" )
 
 # ================
 # == 2D, 8bits ==
 # ================
 
-# Curve constructors
+# tree constructors
 lib_ntree.create_ntree_2d_8b.argtypes = [ POINTER( c_double ),
+                                          c_size_t,
                                           c_double, c_double ]
 lib_ntree.create_ntree_2d_8b.restype = c_void_p
 
-# Curve destructors
+# tree destructors
 lib_ntree.free_ntree_2d_8b.argtypes = [ c_void_p ]
 lib_ntree.free_ntree_2d_8b.restype = c_void_p
+
+# function find( key )
+lib_ntree.find_key_ntree_2d_8b.argtypes = [ c_size_t, c_void_p ]
+lib_ntree.find_key_ntree_2d_8b.restype = c_nparticle_t
+
+# function find( pos, rad )
+lib_ntree.find_radius_ntree_2d_8b.argtypes = [ POINTER( c_double ), c_double, c_void_p ]
+lib_ntree.find_radius_ntree_2d_8b.restype = c_int_vector_t
+
+# ================
+# == 2D, 16bits ==
+# ================
+
+# tree constructors
+lib_ntree.create_ntree_2d_16b.argtypes = [ POINTER( c_double ),
+                                           c_size_t,
+                                           c_double, c_double ]
+lib_ntree.create_ntree_2d_16b.restype = c_void_p
+
+# tree destructors
+lib_ntree.free_ntree_2d_16b.argtypes = [ c_void_p ]
+lib_ntree.free_ntree_2d_16b.restype = c_void_p
+
+# function find( key )
+lib_ntree.find_key_ntree_2d_16b.argtypes = [ c_size_t, c_void_p ]
+lib_ntree.find_key_ntree_2d_16b.restype = c_nparticle_t
+
+# function find( pos, rad )
+lib_ntree.find_radius_ntree_2d_16b.argtypes = [ POINTER( c_double ), c_double, c_void_p ]
+lib_ntree.find_radius_ntree_2d_16b.restype = c_int_vector_t
+
+# ================
+# == 3D, 8bits ==
+# ================
+
+# tree constructors
+lib_ntree.create_ntree_3d_8b.argtypes = [ POINTER( c_double ),
+                                          c_size_t,
+                                          c_double, c_double ]
+lib_ntree.create_ntree_3d_8b.restype = c_void_p
+
+# tree destructors
+lib_ntree.free_ntree_3d_8b.argtypes = [ c_void_p ]
+lib_ntree.free_ntree_3d_8b.restype = c_void_p
+
+# function find( key )
+lib_ntree.find_key_ntree_3d_8b.argtypes = [ c_size_t, c_void_p ]
+lib_ntree.find_key_ntree_3d_8b.restype = c_nparticle_t
+
+# function find( pos, rad )
+lib_ntree.find_radius_ntree_3d_8b.argtypes = [ POINTER( c_double ), c_double, c_void_p ]
+lib_ntree.find_radius_ntree_3d_8b.restype = c_int_vector_t
+
+# ================
+# == 3D, 16bits ==
+# ================
+
+# tree constructors
+lib_ntree.create_ntree_3d_16b.argtypes = [ POINTER( c_double ),
+                                           c_size_t,
+                                           c_double, c_double ]
+lib_ntree.create_ntree_3d_16b.restype = c_void_p
+
+# tree destructors
+lib_ntree.free_ntree_3d_16b.argtypes = [ c_void_p ]
+lib_ntree.free_ntree_3d_16b.restype = c_void_p
+
+# function find( key )
+lib_ntree.find_key_ntree_3d_16b.argtypes = [ c_size_t, c_void_p ]
+lib_ntree.find_key_ntree_3d_16b.restype = c_nparticle_t
+
+# function find( pos, rad )
+lib_ntree.find_radius_ntree_3d_16b.argtypes = [ POINTER( c_double ), c_double, c_void_p ]
+lib_ntree.find_radius_ntree_3d_16b.restype = c_int_vector_t

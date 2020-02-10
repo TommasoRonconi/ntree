@@ -25,6 +25,10 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
   // consider off-set to center the hilbert grid:
   double locmin = boxmin + 0.5 * _lenght;
 
+  // for ( auto && _c : coords )
+  //   std::cout << _c << "\t";
+  // std::cout << "\n";
+
   // this fills the bucket with n-dimensional particles:
   // ( multi-threading friendly )
 #pragma omp parallel for
@@ -48,6 +52,9 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
   		  sico::utl::nparticle< dim, depth > * b ){
   	       return a->h_key < b->h_key;
   	     } );
+  // for ( auto && _b : bucket ) 
+  //   std::cout << _b->h_key << "\t";
+  // std::cout << "\n";
 
   // reset root from nullptr to level0 n-dim cell
   root.reset( new ncell< dim, depth > {} );
