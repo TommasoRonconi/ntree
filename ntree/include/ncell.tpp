@@ -76,6 +76,10 @@ ncell< dim, depth > * ncell< dim, depth >::find ( const size_t key ) {
 
   // if current cell contains particle return this if the key is right
   if ( particle && ( particle->h_key == key ) ) return this;
+  // {
+  //   std::cout << "found in level: " << _level << "\n";
+  //   return this;
+  // }
 
   // otherwise search in the right sub-cell, by using
   // hash function for current level
@@ -105,7 +109,7 @@ ncell< dim, depth > * ncell< dim, depth >::find_next ( const size_t key ) {
 
     // search in sub-cells, starting from next one
     short ic = high_lev->hash_func( key ) + 1;
-    for ( ; ic < ( 1 << dim ); ++ic ) 
+    for ( ; ic < ( 1 << dim ); ++ic )
       if ( high_lev->sub_cell[ ic ] )
 	return high_lev->sub_cell[ ic ]->leftmost();
 

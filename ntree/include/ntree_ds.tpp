@@ -72,22 +72,28 @@ std::vector< size_t > ntree< dim, depth >::_keys_from_perm ( const std::vector< 
 
   std::vector< size_t > keys;
   keys.reserve( sico::utl::ipow( lenght, dim ) );
+  // std::cout << "\nlenght =\t" << lenght << ", dim =\t" << dim << "\n";
+  // std::cout << "I have to find at most: " << sico::utl::ipow( lenght, dim )
+  // 	    << " particles among\t" << sico::utl::ipow( ( 1 << depth ), dim ) << "\n" ;
+  // std::exit( 1 );
   hilbert_coord_t< dim, depth > hpos;
     
   // to keep track of next element in each of 
   // the n arrays
-  int* indices = new int[ dim ]; 
+  size_t* indices = new size_t[ dim ]; 
   
   // initialize with first element's index 
-  for ( size_t ii = 0; ii < dim; ++ii ) indices[ ii ] = 0;
+  for ( unsigned short ii = 0; ii < dim; ++ii ) indices[ ii ] = 0;
 
   while ( 1 ) { 
   
     // get key from current combination 
-    for ( size_t ii = 0; ii < dim; ++ii ) {
+    for ( unsigned short ii = 0; ii < dim; ++ii )
       hpos[ ii ] = arr[ ii * lenght + indices[ ii ] ];
-      // std::cout << hpos( ii ) << " ";
-    }
+    // {
+    //   hpos[ ii ] = arr[ ii * lenght + indices[ ii ] ];
+    //   std::cout << hpos( ii ) << " ";
+    // }
     // std::cout << std::endl; 
     keys.push_back( _hc.get_key( _hc.get_grid( hpos ) ).to_ulong() );
   
@@ -153,7 +159,8 @@ std::vector< size_t > ntree< dim, depth >::find ( const std::vector< double > & 
 
   // find vector of neighbouring keys:
   auto keys = _keys_from_perm( idx_ranges, 2 * nrad + 1 );
-
+  // std::cout << "keys found:\t" << keys.size() << "\n";
+  
   // erase from vector keys not present in tree:
   auto _k = keys.begin();
   while ( _k != keys.end() ) 

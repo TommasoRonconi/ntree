@@ -112,10 +112,10 @@ namespace sico {
      *
      * @return the exact value of base**exp
      */
-    inline int ipow( int base, int exp )
+    inline size_t ipow( size_t base, size_t exp )
     {
       
-      int result = 1;
+      size_t result = 1;
       for (;;) {
 	  if ( exp & 1 ) result *= base;
 	  exp >>= 1;

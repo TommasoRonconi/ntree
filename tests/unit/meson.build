@@ -1,4 +1,4 @@
-tests = [ 'ncell', 'ntree_ds' ]
+tests = [ 'ncell', 'ntree_ds', 'ntree_dimVSdepth' ]
 
 foreach _t : tests
 
