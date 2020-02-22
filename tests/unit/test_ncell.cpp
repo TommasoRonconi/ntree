@@ -74,7 +74,14 @@ int main () {
   auto leftcell = cell2d.leftmost();
 
   if ( leftcell )
-    std::cout << "first cell:\t" << leftcell->particle->h_key << "\n";
+    std::cout << "first cell:\t" << leftcell->particle->h_key << "\t(should be 1)\n";
+
+  // =====================================================================================
+  // check rightmost():
+  auto rightcell = cell2d.rightmost();
+ 
+  if ( rightcell )
+    std::cout << "last cell:\t" << rightcell->particle->h_key << "\t(should be 14)\n";
 
   // =====================================================================================
   // check find_next( key ):
@@ -86,6 +93,14 @@ int main () {
   auto check_cell = leftcell->find_next( 2 );
   if ( check_cell )
     std::cout << "check-cell:\t" << check_cell->particle->h_key << "\t(should be 3)\n";
+
+  // =====================================================================================
+  // check find_prev( key ):
+
+  auto prev = second->find_prev( second->particle->h_key );
+
+  if ( prev )
+    std::cout << "first cell:\t" << prev->particle->h_key << "\t(should be 1)\n";  
 
   // =====================================================================================
   // check everything is in-place:

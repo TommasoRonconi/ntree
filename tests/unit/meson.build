@@ -1,4 +1,8 @@
-tests = [ 'ncell', 'ntree_ds', 'ntree_dimVSdepth' ]
+tests = [ 'ncell',
+          'ntree_ds',
+          'ntree_dimVSdepth',
+          'find_radius_performances',
+          'ncell_set_limits' ]
 
 foreach _t : tests
 
