@@ -31,6 +31,15 @@ struct hilbert_coord_t {
 
   }
 
+  hilbert_coord_t ( std::vector< std::size_t > vect ) {
+    
+    if ( vect.size() != dim )
+      throw sico_err::size_invalid { "Error in initialization, provided vector has wrong size!" };
+
+    for ( unsigned short idx = 0; idx < dim; ++idx ) _container[ idx ] = bitsetfix{ vect[ idx ] };
+
+  }
+
   ~hilbert_coord_t () = default;
 
   bitsetfix & operator[] ( std::size_t idx ) { return _container[ idx ]; }
@@ -85,7 +94,7 @@ bool operator>= ( const std::bitset< N > & xx, const std::bitset< N > & yy ) { r
 template< std::size_t N >
 std::bitset< N > minus1 ( std::bitset< N > bits ) {
 
-    std::bitset< N > mm { 1 };
+  std::bitset< N > mm { 1 };
   
   while ( !( ( bits & mm ).any() ) ) {    
     bits = bits ^ mm;
@@ -116,16 +125,24 @@ public:
 
   ~hilbert_curve () = default;
 
-  std::bitset< dim * depth > get_key ( const hilbert_coord_t< dim, depth > & xx ) const;
+  std::bitset< dim * depth > get_key ( const hilbert_coord_t< dim, depth > & yy ) const;
 
-  hilbert_coord_t< dim, depth > get_axes ( const hilbert_coord_t< dim, depth > & xx ) const;
+  hilbert_coord_t< dim, depth > get_axes ( const hilbert_coord_t< dim, depth > & yy ) const;
 
   hilbert_coord_t< dim, depth > get_grid ( const hilbert_coord_t< dim, depth > & xx ) const;
+
+  std::size_t get_key_from_axes ( const hilbert_coord_t< dim, depth > & xx ) const;
+
+  hilbert_coord_t< dim, depth > get_grid_from_key ( const std::size_t kk ) const;
   
 }; // endclass hilbert_curve
 
+// ==============================================================================================
+// ==============================================================================================
+// ==============================================================================================
+
 template < const size_t dim, const size_t depth >
-std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_coord_t< dim, depth > & xx ) const {
+std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_coord_t< dim, depth > & yy ) const {
 
   std::bitset< dim * depth > key { size_t( 0 ) };
   int levkey = _levhilbert - 1;
@@ -133,7 +150,7 @@ std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_
   while ( levkey >= 0 ) {
 
     for ( size_t ii = 0; ii < dim; ++ii )
-      if ( xx[ ii ][ levkey ] )	key.set( dim - 1 - ii + dim * levkey );
+      key[ dim - 1 - ii + dim * levkey ] = yy[ ii ][ levkey ];
 
     --levkey;
 
@@ -147,29 +164,29 @@ std::bitset< dim * depth > hilbert_curve< dim, depth >::get_key ( const hilbert_
 
 template < const size_t dim, const size_t depth >
 hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_axes ( const hilbert_coord_t< dim,
-								      depth > & xx ) const {
+								      depth > & yy ) const {
 
-  hilbert_coord_t< dim, depth > yy = xx;
-  hilbert_curve::bitsetfix N { 2 << ( depth - 1 ) }, P, Q, t, one { 1 };
+  hilbert_coord_t< dim, depth > xx = yy;
+  hilbert_curve::bitsetfix N { 2 << ( depth - 1 ) }, P, Q, t;
 
   // Gray decode by H ^ ( H / 2 )
-  t = yy[ dim - 1 ] >> 1;
-  for ( size_t ii = dim - 1; ii > 0; --ii ) yy[ ii ] ^= yy[ ii - 1 ];
-  yy[ 0 ] ^= t;
+  t = xx[ dim - 1 ] >> 1;
+  for ( size_t ii = dim - 1; ii > 0; --ii ) xx[ ii ] ^= xx[ ii - 1 ];
+  xx[ 0 ] ^= t;
 
   // Undo excess work
   for ( Q = 2; Q != N; Q <<= 1 ) {
     P = minus1( Q );
-    for ( size_t ii = dim - 1; ii >= 0; --ii )
-      if ( ( yy[ ii ] & Q ).any() ) yy[ 0 ] ^= P; // invert
+    for ( int ii = dim - 1; ii >= 0; --ii ) 
+      if ( ( xx[ ii ] & Q ).any() ) xx[ 0 ] ^= P; // invert
       else {
-	t = ( yy[ 0 ] ^ yy[ ii ] ) & P;
-	yy[ 0 ] ^= t;
-	yy[ ii ] ^= t;
+	t = ( xx[ 0 ] ^ xx[ ii ] ) & P;
+	xx[ 0 ] ^= t;
+	xx[ ii ] ^= t;
       } // exchange
   }
 
-  return yy;
+  return xx;
   
 }
 
@@ -206,5 +223,69 @@ hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_grid ( const hilb
 }
 
 // ==============================================================================================
+
+template < const size_t dim, const size_t depth >
+std::size_t hilbert_curve< dim, depth >::get_key_from_axes ( const hilbert_coord_t< dim, depth > & xx ) const {
+  
+  hilbert_coord_t< dim, depth > yy = xx;
+  
+  hilbert_curve::bitsetfix M { 1 << ( depth - 1 ) }, P, Q, t;
+
+  for ( Q = M; ( Q & _mask1 ).any(); Q >>= 1 ) {
+    P = minus1( Q );
+    for ( size_t ii = 0; ii < dim; ++ii )
+      if ( ( yy[ ii ] & Q ).any() ) yy[ 0 ] ^= P; // invert
+      else {
+	t = ( yy[ 0 ] ^ yy[ ii ] ) & P;
+	yy[ 0 ] ^= t;
+	yy[ ii ] ^= t;
+      } // exchange
+  }
+
+  // Gray encode
+  for ( size_t ii = 1; ii < dim; ++ii ) yy[ ii ] ^= yy[ ii - 1 ];
+  t = 0;
+  for ( Q = M; ( Q & _mask1 ).any(); Q >>= 1 )
+    if ( ( yy[ dim - 1 ] & Q ).any() ) t ^= minus1( Q );
+
+  std::bitset< dim * depth > key { size_t( 0 ) };
+  for ( size_t ii = 0; ii < dim; ++ii ) {
+
+    yy[ ii ] ^= t;
+    
+    for ( int levkey = _levhilbert - 1; levkey >= 0; --levkey ) 
+      key[ dim - 1 - ii + dim * levkey ] = yy[ ii ][ levkey ];
+
+  }
+    
+  
+  return key.to_ulong();
+  
+}
+
+// ==============================================================================================
+
+template < const size_t dim, const size_t depth >
+hilbert_coord_t< dim, depth > hilbert_curve< dim, depth >::get_grid_from_key ( const std::size_t kk ) const {
+
+  hilbert_coord_t< dim, depth > yy;
+  std::bitset< dim * depth > key { kk };
+  int levkey = _levhilbert - 1;
+
+  while ( levkey >= 0 ) {
+
+    for ( size_t ii = 0; ii < dim; ++ii )
+      yy[ ii ][ levkey ] = key[ dim - 1 - ii + dim * levkey ];
+
+    --levkey;
+
+  }
+
+  return yy;
+  
+}
+
+// ==============================================================================================
+
 
 #endif //__HILBERT_CURVE__
