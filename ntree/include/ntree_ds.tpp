@@ -25,10 +25,6 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
   // consider off-set to center the hilbert grid:
   double locmin = boxmin + 0.5 * _lenght;
 
-  // for ( auto && _c : coords )
-  //   std::cout << _c << "\t";
-  // std::cout << "\n";
-
   // this fills the bucket with n-dimensional particles:
   // ( multi-threading friendly )
 #pragma omp parallel for
@@ -52,9 +48,6 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
   		  sico::utl::nparticle< dim, depth > * b ){
   	       return a->h_key < b->h_key;
   	     } );
-  // for ( auto && _b : bucket ) 
-  //   std::cout << _b->h_key << "\t";
-  // std::cout << "\n";
 
   // reset root from nullptr to level0 n-dim cell
   root.reset( new ncell< dim, depth > {} );
@@ -62,112 +55,50 @@ ntree< dim, depth >::ntree ( const std::vector< double > & coords,
   // call recursive insert:
   root->insert( bucket );
 
+  // set cell-limits recursively
+  root->set_limits( 0, _hc );
+
 }
 
 // ===============================================================
 
 template< const size_t dim, const size_t depth >
-std::vector< size_t > ntree< dim, depth >::_keys_from_perm ( const std::vector< std::size_t > & arr,
-							     const size_t lenght ) {
-
-  std::vector< size_t > keys;
-  keys.reserve( sico::utl::ipow( lenght, dim ) );
-  // std::cout << "\nlenght =\t" << lenght << ", dim =\t" << dim << "\n";
-  // std::cout << "I have to find at most: " << sico::utl::ipow( lenght, dim )
-  // 	    << " particles among\t" << sico::utl::ipow( ( 1 << depth ), dim ) << "\n" ;
-  // std::exit( 1 );
-  hilbert_coord_t< dim, depth > hpos;
-    
-  // to keep track of next element in each of 
-  // the n arrays
-  size_t* indices = new size_t[ dim ]; 
-  
-  // initialize with first element's index 
-  for ( unsigned short ii = 0; ii < dim; ++ii ) indices[ ii ] = 0;
-
-  while ( 1 ) { 
-  
-    // get key from current combination 
-    for ( unsigned short ii = 0; ii < dim; ++ii )
-      hpos[ ii ] = arr[ ii * lenght + indices[ ii ] ];
-    // {
-    //   hpos[ ii ] = arr[ ii * lenght + indices[ ii ] ];
-    //   std::cout << hpos( ii ) << " ";
-    // }
-    // std::cout << std::endl; 
-    keys.push_back( _hc.get_key( _hc.get_grid( hpos ) ).to_ulong() );
-  
-    // find the rightmost array that has more 
-    // elements left after the current element  
-    // in that array 
-    int next = dim - 1; 
-    while ( next >= 0 && ( indices[ next ] + 1 >= lenght ) ) --next;
-	
-    // no such array is found so no more  
-    // combinations left 
-    if ( next < 0 ) {
-      delete[] indices;
-      return keys;
-    }
-  
-    // if found move to next element in that  
-    // array 
-    ++indices[ next ]; 
-  
-    // for all arrays to the right of this  
-    // array current index again points to  
-    // first element 
-    for ( size_t ii = next + 1; ii < dim; ++ii ) indices[ ii ] = 0;
-    
-  }
-  
-  delete[] indices;
-  return keys;
-  
-}
-  
-// ===============================================================
-
-template< const size_t dim, const size_t depth >
-std::vector< size_t > ntree< dim, depth >::find ( const std::vector< double > & coords,
-						  const double rad ) {
+std::vector< std::size_t > ntree< dim, depth >::find ( const std::vector< double > & coords,
+						       const double rad ) {
 
   // find number of cells per dimension:
   int nrad = std::round( rad * _expand );
+  
+  std::vector< std::size_t > keys;
+  keys.reserve( sico::utl::ipow( 2 * nrad + 1, dim ) );
 
-  // maximum index allows for cycling (periodic boundaries)
-  size_t idx_max = ( 1 << depth );
+  std::vector< unsigned int > idx_low ( dim ), idx_hgh ( dim );
 
-  // allocate vector for index ranges in dim dimensions:
-  std::vector< std::size_t > idx_ranges ( dim * ( 2 * nrad + 1 ) );
-
+  // std::cout << "Rad = " << rad;
+  // // std::cout << "\niRad = " << nrad << "\nPos = ( ";
+  // for ( auto && _c : coords )
+  //   std::cout << _c << " ";
+  // std::cout << ")\niPos = ( ";
   // find range of indexes in each dimension
-  for ( size_t jj = 0; jj < dim; ++jj ) {
+  for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
     // find position from float coords:    
-    int pos = int( ( coords[ jj ] - _boxmin ) * _expand );
+    int pos = int( ( coords[ ii ] - _boxmin ) * _expand );
+
+    // set limits:
+    // idx_low[ ii ] = ( pos - nrad + idx_max ) % idx_max; // periodic
+    idx_low[ ii ] = ( pos - nrad ) >= 0 ? pos - nrad : 0;
+    // idx_hgh[ ii ] = ( pos + nrad + idx_max ) % idx_max; // periodic
+    idx_hgh[ ii ] = ( pos + nrad );
+
+    // std::cout << pos << " [ " << idx_low[ ii ] << ", " << idx_hgh[ ii ] << " ] ";
     
-    // std::cout << pos << ":\t";
-    for ( int ii = pos - nrad; ii <= pos + nrad; ++ii ) // {
-      idx_ranges[ jj * ( 2 * nrad + 1 ) + ii - pos + nrad ] = ( ii + idx_max ) % idx_max;
-    //   std::cout
-    // 	<< "\t( " << jj * ( 2 * nrad + 1 ) + ii - pos + nrad
-    // 	<< " ): " << idx_ranges[ jj * ( 2 * nrad + 1 ) + ii - pos + nrad ];
-    // }
-    // std::cout << "\n";
   }
+  // std::cout << ")" << std::endl;
 
-  // find vector of neighbouring keys:
-  auto keys = _keys_from_perm( idx_ranges, 2 * nrad + 1 );
-  // std::cout << "keys found:\t" << keys.size() << "\n";
+  root->find_in_range( idx_low, idx_hgh, keys );
   
-  // erase from vector keys not present in tree:
-  auto _k = keys.begin();
-  while ( _k != keys.end() ) 
-    if ( *find( *_k ) ) ++_k; // if key exists, increase iterator
-    else _k = keys.erase( _k ); // if key does not exist, erase and reset iterator
-
-  return keys;
+  return std::vector< std::size_t >{ keys.begin(), keys.end() };
   
 }
 

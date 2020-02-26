@@ -1,6 +1,83 @@
 // ===============================================================
 
 template< const size_t dim, const size_t depth >
+void ncell< dim, depth >::insert ( const std::vector< nparticle< dim, depth > * > & bucket ) {
+
+  auto start = bucket.begin();
+
+  // this loop iterates on the 2^dim sub-cells:
+  for ( short ic = 0; ic < ( 1 << dim ); ++ic ) {
+
+    // finds iterator to last position for current cell
+    auto stop { std::upper_bound( start, bucket.end(), ic,
+				  [&] ( const short & a, nparticle< dim, depth > * b ){
+				    return a < hash_func( b->h_key );
+				  } ) };
+    
+    // compute lenght of sub-vector
+    auto dist = std::distance( start, stop );
+    
+    // if sub-vector not empty, dig deeper ( recursion! )
+    if ( dist > 1 ) {
+      
+      // initialize the sub-cell
+      sub_cell[ic].reset( new ncell< dim, depth > { _level + 1, this } );
+
+      // call recursion
+      sub_cell[ic]->insert( std::vector< nparticle< dim, depth > * > { start, stop } );
+      
+    }
+    
+    // set the particle if only one is contained in the sub-vector
+    else if ( dist == 1 )
+      sub_cell[ic].reset( new ncell< dim, depth > { *start, _level + 1, this } );
+
+    // reset start iterator for next sub-cell
+    start = stop;
+    
+  }
+
+}
+
+// ===============================================================
+
+template< const size_t dim, const size_t depth >
+void ncell< dim, depth >::set_limits ( const std::size_t keyloc,
+				       const hilbert_curve< dim, depth > & hloc) {
+
+  // number of thinnest gridcells in each cell:
+  std::size_t Lcell = 1 << ( depth - _level );
+
+  // get the local axes:
+  auto _gridloc = hloc.get_grid_from_key( keyloc );
+  auto _axesloc = hloc.get_axes( _gridloc );
+
+  if ( _parent )
+    for ( unsigned short ii = 0; ii < dim; ++ii ) {
+      std::size_t ax = _axesloc( ii ) - ( _axesloc( ii ) % Lcell );
+      _cell_min[ ii ] = ax;
+      _cell_max[ ii ] = ax + Lcell;
+    }
+  else {
+    _cell_min = std::vector< std::size_t >( dim, 0 );
+    _cell_max = std::vector< std::size_t >( dim, Lcell );
+  }
+  
+  // this loop iterates on the 2^dim sub-cells:
+  // if sub-cell ic-th exists -> call recursion.
+  for ( short ic = 0; ic < ( 1 << dim ); ++ic ) 
+    if ( sub_cell[ ic ] ) {
+      std::size_t new_key = keyloc + ic * ipow( Lcell >> 1, dim );
+      sub_cell[ ic ]->set_limits( new_key, hloc );
+    }
+
+  return;
+  
+}
+
+// ===============================================================
+
+template< const size_t dim, const size_t depth >
 void ncell< dim, depth >::clear () {
 
   // if current cell contains a particle
@@ -24,48 +101,61 @@ void ncell< dim, depth >::clear () {
 // ===============================================================
 
 template< const size_t dim, const size_t depth >
-void ncell< dim, depth >::insert ( const std::vector< nparticle< dim, depth > * > & bucket ) {
+void ncell< dim, depth >::dump_all ( std::vector< std::size_t > & keys ) {
 
-  // std::cout << "check enter: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
+  auto here = ncell< dim, depth >::iterator{ leftmost() };
+  auto last = ncell< dim, depth >::iterator{ rightmost() };
 
-  auto start = bucket.begin();
-
-  // this loop iterates on the 2^dim sub-cells:
-  for ( short ic = 0; ic < ( 1 << dim ); ++ic ) {
-
-    // finds iterator to last position for current cell
-    auto stop { std::upper_bound( start, bucket.end(), ic,
-				  [&] ( const short & a, nparticle< dim, depth > * b ){
-				    return a < hash_func( b->h_key );
-				  } ) };
-    
-    // compute lenght of sub-vector
-    auto dist = std::distance( start, stop );
-    
-    // std::cout << "\tlevel = " << _level << ", subcell = " << ic << ", distance = " << dist << "\n";
-    
-    // if sub-vector not empty, dig deeper ( recursion! )
-    if ( dist > 1 ) {
-      
-      // initialize the sub-cell
-      sub_cell[ic].reset( new ncell< dim, depth > { _level + 1, this } );
-
-      // call recursion
-      sub_cell[ic]->insert( std::vector< nparticle< dim, depth > * > { start, stop } );
-      
-    }
-    
-    // set the particle if only one is contained in the sub-vector
-    else if ( dist == 1 ) {
-      sub_cell[ic].reset( new ncell< dim, depth > { *start, _level + 1, this } );
-      // std::cout << "set at lev =\t" << _level << "\tin subcell\t" << ic << "\n";
-    }
-
-    // reset start iterator for next sub-cell
-    start = stop;
-    
+  while ( here != last ) {
+    keys.emplace_back( here->particle->h_key );
+    ++here;
   }
-  // std::cout << "check exit: level = " << _level << ", bucket.size() = " << bucket.size() << "\n";
+  keys.emplace_back( last->particle->h_key );
+  
+  return;
+
+}
+
+// ===============================================================
+
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::leftmost () {
+
+  // if current cell contains particle,
+  // there are no deeper cells
+  if ( particle )
+    return this;
+
+  // otherwise call recursion from first
+  // not null sub-cell
+  for ( short ic = 0; ic < ( 1 << dim ); ++ic )
+    if ( sub_cell[ ic ] )
+      return sub_cell[ ic ]->leftmost();
+
+  // if nor this cell nor its sub-cells contain
+  // any particle, return null
+  return nullptr;
+
+}
+
+// ===============================================================
+
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::rightmost () {
+
+  // if current cell contains particle,
+  // there are no deeper cells
+  if ( particle ) return this;
+
+  // otherwise call recursion from last
+  // not null sub-cell
+  for ( short ic = ( 1 << dim ) - 1; 0 <= ic; --ic )
+    if ( sub_cell[ ic ] ) 
+      return sub_cell[ ic ]->rightmost();
+
+  // if nor this cell nor its sub-cells contain
+  // any particle, return null
+  return nullptr;
 
 }
 
@@ -76,10 +166,6 @@ ncell< dim, depth > * ncell< dim, depth >::find ( const size_t key ) {
 
   // if current cell contains particle return this if the key is right
   if ( particle && ( particle->h_key == key ) ) return this;
-  // {
-  //   std::cout << "found in level: " << _level << "\n";
-  //   return this;
-  // }
 
   // otherwise search in the right sub-cell, by using
   // hash function for current level
@@ -94,6 +180,35 @@ ncell< dim, depth > * ncell< dim, depth >::find ( const size_t key ) {
       return nullptr;
   }
     
+}
+
+// ===============================================================
+
+template< const size_t dim, const size_t depth >
+ncell< dim, depth > * ncell< dim, depth >::find_prev ( const size_t key ) {
+
+  // go to higher level
+  auto high_lev = _parent;
+
+  // if higher level is not null
+  if ( high_lev ) {
+
+    // search in sub-cells, starting from prev one
+    short ic = high_lev->hash_func( key ) - 1;
+    for ( ; 0 <= ic; --ic )
+      if ( high_lev->sub_cell[ ic ] )
+	return high_lev->sub_cell[ ic ]->rightmost();
+
+    // rise one level up
+    return high_lev->find_prev( key );
+    
+  }
+
+  // if the highest level is reached and no
+  // particle is found
+  else
+    return nullptr;
+
 }
 
 // ===============================================================
@@ -128,22 +243,58 @@ ncell< dim, depth > * ncell< dim, depth >::find_next ( const size_t key ) {
 // ===============================================================
 
 template< const size_t dim, const size_t depth >
-ncell< dim, depth > * ncell< dim, depth >::leftmost () {
+void ncell< dim, depth >::find_in_range ( const std::vector< unsigned int > minima,
+					  const std::vector< unsigned int > maxima,
+					  std::vector< std::size_t > & keys ) {
 
-  // if current cell contains particle,
-  // there'are no deeper cells
-  if ( particle )
-    return this;
+  bool any = true;
+  bool all = true;
 
-  // otherwise call recursion from first
-  // not null sub-cell
-  for ( short ic = 0; ic < bitset( 0, dim ); ++ic )
-    if ( sub_cell[ ic ] )
-      return sub_cell[ ic ]->leftmost();
+  for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
-  // if nor this cell nor its sub-cells contain
-  // any particle, return null
-  return nullptr;
+    bool all1d =( ( minima[ ii ] <= _cell_min[ ii ] ) &&  ( _cell_max[ ii ] <= maxima[ ii ] + 1 ) );
+    
+    any &= all1d != \
+      ( ( ( _cell_min[ ii ] <= minima[ ii ] ) && ( minima[ ii ] < _cell_max[ ii ] ) ) || \
+	( ( _cell_min[ ii ] <= maxima[ ii ] ) && ( maxima[ ii ] < _cell_max[ ii ] ) ) );
+    
+    all &= all1d;
+
+  }
+
+  // auto first = leftmost();
+  // auto last = rightmost();
+  // //  1860226314
+  // if ( ( first->particle->h_key <= 28405 ) && ( 28405 <= last->particle->h_key ) ) {
+  //   std::cout << "here: " << any << " - " << all << "\n";
+  //   if ( any == all ) {
+  //     std::cout << _cell_min[ 0 ] << " - " << _cell_max[ 0 ] << "\n";
+  //     std::cout << _cell_min[ 1 ] << " - " << _cell_max[ 1 ] << "\n";
+  //     std::cout << "\tVS\n";
+  //     std::cout << minima[ 0 ] << " - " << maxima[ 0 ] << "\n";
+  //     std::cout << minima[ 1 ] << " - " << maxima[ 1 ] << "\n";
+  //   }
+  // }
+
+  // store all particles:
+  if ( all ) 
+    dump_all( keys );
+  
+  else if ( any ) {
+
+    // if leaf-cell -> store key:
+    if ( particle ) 
+      keys.emplace_back( particle->h_key );
+    
+    // else -> call recursion from (existing) sub-cells
+    else 
+      for ( auto && sc : sub_cell )
+	if ( sc )
+	  sc->find_in_range( minima, maxima, keys );
+    
+  } // end if ( any )
+
+  return;
 
 }
 

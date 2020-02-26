@@ -1,6 +1,7 @@
 tests = [ 'ncell',
           'ntree_ds',
           'ntree_dimVSdepth',
+          'find_radius',
           'find_radius_performances',
           'ncell_set_limits' ]
 

@@ -63,10 +63,13 @@ namespace sico {
 
     template < const size_t dim = 2, const size_t depth = 2 > 
     struct ncell {
-
+	
       std::size_t _level;
 
       ncell * _parent = nullptr;
+
+      std::vector< std::size_t > _cell_min = std::vector< std::size_t>( dim );
+      std::vector< std::size_t > _cell_max = std::vector< std::size_t>( dim );
 
       /// by initializing a vector of pointers it will have size 4 and all the 4 elements will be
       /// initialized to the default value ( which is 'nullptr', as I wish ).
@@ -89,7 +92,7 @@ namespace sico {
 
 	  particle.reset( new_particle );
     
-	}
+	}				   
 
       ~ncell() noexcept = default;
 
@@ -104,10 +107,30 @@ namespace sico {
 
       }
 
+      void set_limits ( const std::size_t keyloc,
+			const hilbert_curve< dim, depth > & hloc );
+
       // clears up everything from the current cell and below
       void clear ();
 
+      // inserts into vector keys, all the particle keys within cell
+      void dump_all ( std::vector< std::size_t > & keys );
+
+      // starting from the current cell gets you to the
+      // first occupied one, following the hilbert ordering
+      ncell * leftmost ();
+
+      // starting from the current cell gets you to the
+      // last occupied one, following the hilbert ordering
+      ncell * rightmost ();
+
       ncell * find ( const size_t key );
+
+      // starting from a known cell gets you to the previous occupied one
+      // (Warning: this might mess-up stuff if the key is not selected accurately,
+      //           no error nor exception is raised independently of the key provided
+      //           but behaviour is undefined in case the key is not within the range)
+      ncell * find_prev ( const size_t key );
 
       // starting from a known cell gets you to the next occupied one
       // (Warning: this might mess-up stuff if the key is not selected accurately,
@@ -115,9 +138,14 @@ namespace sico {
       //           but behaviour is undefined in case the key is not within the range)
       ncell * find_next ( const size_t key );
 
-      // starting from the current cell gets you to the
-      // first occupied one, following the hilbert ordering
-      ncell * leftmost ();
+      // recursively searches for keys included in a range:
+      // starting from the current cell:
+      // - decomposes space into sub-cells;
+      // - finds those that are included within ranges;
+      // - appends keys to output vector;
+      void find_in_range ( const std::vector< unsigned int > minima,
+			   const std::vector< unsigned int > maxima,
+			   std::vector< std::size_t > & keys );
 
       // template
       class iterator {

@@ -132,7 +132,28 @@ int main () {
     std::cout << "find check:\tok!\n";
 
   // =====================================================================================
+  // check dump_all( keys ):
+
+  std::vector< std::size_t > keys;
+
+  cell2d.dump_all( keys );
+
+  std::cout << "Dump all keys:\n";
+  for ( auto && _k : keys )
+    std::cout << _k << "\n";
+
+  std::vector< std::size_t > keys1;
+  auto cell1el = sico::utl::ncell< 2, depth >::iterator{ cell2d.sub_cell[ 3 ].get() };
+  cell1el->dump_all( keys1 );
+
+  
+  std::cout << "Dump all keys:\n";
+  for ( auto && _k : keys1 )
+    std::cout << _k << "\n";  
+
+  // =====================================================================================
   // check clear():
+  
   cell2d.clear();
 
   leftcell = cell2d.leftmost();

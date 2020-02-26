@@ -28,11 +28,6 @@ namespace sico {
       
       std::unique_ptr< ncell< dim, depth > > root = nullptr;
 
-      std::vector< size_t > _keys_from_perm ( const std::vector< std::size_t > & arr,
-					      const size_t lenght );
-
-      // hilbert_coord_t< dim, depth > _coord_to_hpos ( std::vector< double > & coords );
-
     public:
 
       ntree () = default;
