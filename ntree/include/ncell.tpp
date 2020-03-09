@@ -10,7 +10,7 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim, depth > * 
 
     // finds iterator to last position for current cell
     auto stop { std::upper_bound( start, bucket.end(), ic,
-				  [&] ( const short & a, nparticle< dim, depth > * b ){
+				  [ & ] ( const short & a, nparticle< dim, depth > * b ){
 				    return a < hash_func( b->h_key );
 				  } ) };
     
@@ -21,16 +21,16 @@ void ncell< dim, depth >::insert ( const std::vector< nparticle< dim, depth > * 
     if ( dist > 1 ) {
       
       // initialize the sub-cell
-      sub_cell[ic].reset( new ncell< dim, depth > { _level + 1, this } );
+      sub_cell[ ic ].reset( new ncell< dim, depth > { _level + 1, this } );
 
       // call recursion
-      sub_cell[ic]->insert( std::vector< nparticle< dim, depth > * > { start, stop } );
+      sub_cell[ ic ]->insert( std::vector< nparticle< dim, depth > * > { start, stop } );
       
     }
     
     // set the particle if only one is contained in the sub-vector
     else if ( dist == 1 )
-      sub_cell[ic].reset( new ncell< dim, depth > { *start, _level + 1, this } );
+      sub_cell[ ic ].reset( new ncell< dim, depth > { *start, _level + 1, this } );
 
     // reset start iterator for next sub-cell
     start = stop;
