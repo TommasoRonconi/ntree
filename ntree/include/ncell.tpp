@@ -252,11 +252,11 @@ void ncell< dim, depth >::find_in_range ( const std::vector< unsigned int > mini
 
   for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
-    bool all1d =( ( minima[ ii ] <= _cell_min[ ii ] ) &&  ( _cell_max[ ii ] <= maxima[ ii ] + 1 ) );
+    bool all1d = ( ( minima[ ii ] <= _cell_min[ ii ] ) &&  ( _cell_max[ ii ] < maxima[ ii ] ) );
     
     any &= all1d != \
-      ( ( ( _cell_min[ ii ] <= minima[ ii ] ) && ( minima[ ii ] < _cell_max[ ii ] ) ) || \
-	( ( _cell_min[ ii ] <= maxima[ ii ] ) && ( maxima[ ii ] < _cell_max[ ii ] ) ) );
+      ( ( ( _cell_min[ ii ] < minima[ ii ] ) && ( minima[ ii ] <= _cell_max[ ii ] ) ) || \
+	( ( _cell_min[ ii ] < maxima[ ii ] ) && ( maxima[ ii ] <= _cell_max[ ii ] ) ) );
     
     all &= all1d;
 
