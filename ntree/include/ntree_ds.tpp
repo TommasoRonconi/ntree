@@ -74,11 +74,16 @@ std::vector< std::size_t > ntree< dim, depth >::find ( const std::vector< double
 
   std::vector< unsigned int > idx_low ( dim ), idx_hgh ( dim );
 
+  // ( temporary: make it static var ) find maximum index:
+  unsigned int idx_max = _boxmax * _expand;
+
+  // std::cout << "ID_max = " << idx_max << "\n";
   // std::cout << "Rad = " << rad;
-  // // std::cout << "\niRad = " << nrad << "\nPos = ( ";
+  // std::cout << "\niRad = " << nrad << "\nPos = ( ";
   // for ( auto && _c : coords )
   //   std::cout << _c << " ";
   // std::cout << ")\niPos = ( ";
+  
   // find range of indexes in each dimension
   for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
@@ -86,17 +91,24 @@ std::vector< std::size_t > ntree< dim, depth >::find ( const std::vector< double
     int pos = int( ( coords[ ii ] - _boxmin ) * _expand );
 
     // set limits:
-    // idx_low[ ii ] = ( pos - nrad + idx_max ) % idx_max; // periodic
-    idx_low[ ii ] = ( pos - nrad ) >= 0 ? pos - nrad : 0;
-    // idx_hgh[ ii ] = ( pos + nrad + idx_max ) % idx_max; // periodic
-    idx_hgh[ ii ] = ( pos + nrad );
 
-    // std::cout << pos << " [ " << idx_low[ ii ] << ", " << idx_hgh[ ii ] << " ] ";
+    // idx_low[ ii ] = metric( pos, nrad, idx_max );
+    idx_low[ ii ] = ( pos - nrad + idx_max ) % idx_max; // periodic
+    // idx_low[ ii ] = ( pos - nrad ) >= 0 ? pos - nrad : 0; // euclidean
+
+    // idx_hgh[ ii ] = metric( pos, - nrad, idx_max ); // note: this one has problems!!!
+    idx_hgh[ ii ] = ( pos + nrad + idx_max ) % idx_max; // periodic
+    // idx_hgh[ ii ] = ( pos + nrad ); // euclidean
+
+    // std::cout << pos << " [ "
+    // 	      << idx_low[ ii ] << ", "
+    // 	      << idx_hgh[ ii ] << " ] -> d = "
+    // 	      << sico::utl::metric( idx_hgh[ ii ], idx_low[ ii ], idx_max ) << "; ";
     
   }
   // std::cout << ")" << std::endl;
 
-  root->find_in_range( idx_low, idx_hgh, keys );
+  root->find_in_range( idx_low, idx_hgh, keys, idx_max );
   
   return std::vector< std::size_t >{ keys.begin(), keys.end() };
   

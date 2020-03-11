@@ -145,7 +145,8 @@ namespace sico {
       // - appends keys to output vector;
       void find_in_range ( const std::vector< unsigned int > minima,
 			   const std::vector< unsigned int > maxima,
-			   std::vector< std::size_t > & keys );
+			   std::vector< std::size_t > & keys,
+			   const unsigned int idx_max );
 
       // template
       class iterator {

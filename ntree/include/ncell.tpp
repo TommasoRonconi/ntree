@@ -245,35 +245,51 @@ ncell< dim, depth > * ncell< dim, depth >::find_next ( const size_t key ) {
 template< const size_t dim, const size_t depth >
 void ncell< dim, depth >::find_in_range ( const std::vector< unsigned int > minima,
 					  const std::vector< unsigned int > maxima,
-					  std::vector< std::size_t > & keys ) {
+					  std::vector< std::size_t > & keys,
+					  const unsigned int idx_max ) {
 
   bool any = true;
   bool all = true;
+  int Lcell = 1 << ( depth - _level );
 
+  // periodic:
   for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
-    bool all1d = ( ( minima[ ii ] <= _cell_min[ ii ] ) &&  ( _cell_max[ ii ] < maxima[ ii ] ) );
+    int dist = metric( maxima[ ii ], minima[ ii ], idx_max );
     
-    any &= all1d != \
-      ( ( ( _cell_min[ ii ] < minima[ ii ] ) && ( minima[ ii ] <= _cell_max[ ii ] ) ) || \
-	( ( _cell_min[ ii ] < maxima[ ii ] ) && ( maxima[ ii ] <= _cell_max[ ii ] ) ) );
+    // this should go away:
+    int
+      min  = minima[ ii ],
+      max  = maxima[ ii ], 
+      cmin = _cell_min[ ii ],
+      cmax = _cell_max[ ii ];
+
+    bool all1d = ( ( ( metric( cmin, min, idx_max ) + metric( max, cmin, idx_max ) ) == dist ) &&
+		   ( ( metric( cmax, min, idx_max ) + metric( max, cmax, idx_max ) ) == dist ) &&
+		   ( Lcell <= dist ) );
     
+    any &= all1d || ( ( ( metric( min, cmin, idx_max ) + metric( cmax, min, idx_max ) ) == Lcell ) ||
+		      ( ( metric( max, cmin, idx_max ) + metric( cmax, max, idx_max ) ) == Lcell ) );
+  
     all &= all1d;
 
   }
+  
+  // not periodic:
+  // for ( unsigned short ii = 0; ii < dim; ++ii ) {
 
-  // auto first = leftmost();
-  // auto last = rightmost();
-  // //  1860226314
-  // if ( ( first->particle->h_key <= 28405 ) && ( 28405 <= last->particle->h_key ) ) {
-  //   std::cout << "here: " << any << " - " << all << "\n";
-  //   if ( any == all ) {
-  //     std::cout << _cell_min[ 0 ] << " - " << _cell_max[ 0 ] << "\n";
-  //     std::cout << _cell_min[ 1 ] << " - " << _cell_max[ 1 ] << "\n";
-  //     std::cout << "\tVS\n";
-  //     std::cout << minima[ 0 ] << " - " << maxima[ 0 ] << "\n";
-  //     std::cout << minima[ 1 ] << " - " << maxima[ 1 ] << "\n";
-  //   }
+  //   bool all1d = ( ( minima[ ii ] <= _cell_min[ ii ] ) &&
+  // 		   ( _cell_max[ ii ] < maxima[ ii ] ) );
+    
+  //   any &=
+  //     all1d != (
+  // 		( ( _cell_min[ ii ] < minima[ ii ] ) &&
+  // 		  ( minima[ ii ] <= _cell_max[ ii ] )  ) ||
+  // 		( ( _cell_min[ ii ] < maxima[ ii ] ) &&
+  // 		  ( maxima[ ii ] <= _cell_max[ ii ] ) ) );
+  
+  //   all &= all1d;
+
   // }
 
   // store all particles:
@@ -290,7 +306,7 @@ void ncell< dim, depth >::find_in_range ( const std::vector< unsigned int > mini
     else 
       for ( auto && sc : sub_cell )
 	if ( sc )
-	  sc->find_in_range( minima, maxima, keys );
+	  sc->find_in_range( minima, maxima, keys, idx_max );
     
   } // end if ( any )
 

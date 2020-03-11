@@ -52,6 +52,7 @@ int main () {
 
     std::cout << "I have found " << vect.size() << " keys\n";
 
+    std::vector< unsigned int > minima = { 57, 96 }, maxima = { 159, 198 };
     bool allfound = true;
     for ( auto && ik : idx_keys ) {
       auto it = std::find( vect.begin(), vect.end(), all_keys[ ik ] );
@@ -62,8 +63,12 @@ int main () {
 	if ( *check ) {
 	  std::cout << " But it exists!!!\n";
 	  std::cout << "Cell-limits:\n";
-	  for ( unsigned short ii = 0; ii < dim; ++ii )
-	    std::cout << "\t" << check->_cell_min[ ii ] << " - " << check->_cell_max[ ii ] << "\n";
+	  for ( unsigned short ii = 0; ii < dim; ++ii ) {
+	    std::cout << "\t"
+		      << check->_cell_min[ ii ] << " - " << check->_cell_max[ ii ] << "\n"
+		      << "\td_cmin = " << sico::utl::metric( check->_cell_min[ ii ], minima[ ii ], 256 ) + sico::utl::metric( maxima[ ii ], check->_cell_min[ ii ], 256 ) << "\n"
+		      << "\td_cmax = " << sico::utl::metric( check->_cell_max[ ii ], minima[ ii ], 256 ) + sico::utl::metric( maxima[ ii ], check->_cell_max[ ii ], 256 ) << "\n";
+	  }
 	}
 	else
 	  std::cout << " And it is not in the tree, damn!\n";
