@@ -127,71 +127,25 @@ namespace sico {
     }
 
     /**
-     * @class Structure to handle functions to be integrated with gsl
+     * @brief A periodic distance measure with periodicity in the interval [ 0, max )
+     *
+     * @param aa first integer coordinate
+     *
+     * @param bb second integer coordinate
+     *
+     * @param max maximum value of the interval 
+     *
+     * @return distance between ( aa - bb ) in the periodic interval [ 0, max )
+     *
+     * @warning the operation is not commutative!
      */
-    struct STR_generic_func_GSL {
-      
-      std::function< double( double ) > f;
-      double xx0;
+    inline int metric ( const int aa, const int bb, const int max ) {
 
-      std::function< double( std::vector< double > ) > fmin;
+      int dist = aa - bb;
+      // return abs( dist ); // euclidean
+      return ( dist + max ) % max + max * int( dist / max ) ; // periodic
 
-      std::function< double( std::vector< double > & ) > fmin_return;
-      std::vector< double > parameters_return;
-
-    };
-
-    /**
-     * @brief This function returns the result at position <code>xx</code> of the function
-     *        stored within an object of type <code>sico::utl::STR_generic_func_GSL</code>
-     *        that is casted in input to a pointer to void and casted back to its original
-     *        pointer type within the function itself.
-     *
-     * @param xx position at which to compute the value of the function
-     *
-     * @param params pointer to type STR_generic_func_GSL casted to pointer to void 
-     *
-     * @return the estimated value of the function stored within <code>params</code> struct
-     */
-    double gen_func ( const double xx, void * params );
-
-    /**
-     * @brief Function to handle integration with <code>gsl_integrate_qng</code> function.
-     * 
-     * @param func an object of std::function type taking a double as argument and
-     *             returning a double as result
-     * 
-     * @param aa lower limit of integral
-     * 	                                
-     * @param bb upper limit of integral
-     * 
-     * @param prec required precision of the integral
-     *
-     * @return the double precision result of the integral
-     */
-    double integrate_qng ( std::function< double( double ) > func, const double aa, const double bb, const double prec = 1.e-2 );
-
-    /**
-     * @brief Function to handle integration with <code>gsl_integrate_qag</code> function.
-     * 	                                             
-     * @param func an object of std::function type taking a double as argument and
-     * 	           returning a double as result
-     *
-     * @param aa lower limit of integral
-     *
-     * @param bb upper limit of integral
-     *
-     * @param prec required precision of the integral                                       
-     *
-     * @param limit_size number of maximum iterations
-     * 
-     * @param rule the integration rule
-     *
-     * @return the double precision result of the integral
-     *
-     * @warning should expand this section of doc with further infos from gsl doc page
-     */
-    double integrate_qag ( std::function< double( double ) > func, const double aa, const double bb, const double prec = 1.e-2, const int limit_size = 1000, const int rule = 6 );
+    }
 
     /** 
      * @brief Naive implementation of the trapezoidal integration method. 
@@ -208,29 +162,6 @@ namespace sico {
      * @return the double precision result of the integral
      */
     double integrate_trap ( std::function< double( double ) > func, const double aa, const double bb, const size_t size = 100 );
-
-    /**
-     * @brief This function returns the result at position <code>xx</code> of the function
-     *        from which 
-     *        stored within an object of type <code>sico::utl::STR_generic_func_GSL</code>
-     *        that is casted in input to a pointer to void and casted back to its original
-     *        pointer type within the function itself.
-     *
-     * @param xx position at which to compute the value of the function
-     *
-     * @param params pointer to type STR_generic_func_GSL casted to pointer to void 
-     *
-     * @return the estimated value of the function stored within <code>params</code> struct
-     *
-     * @warning check that it actually does what is supposed to do, I guess it should return
-     *         \f[ f(x) - f(x_0) \f]
-     *         not
-     *         \f[ f(x) - x_0 \f]
-     */
-    double gen_root ( const double xx, void * prm );
-    double root_brent ( std::function< double( double ) > func, const double xx0,
-			const double low_guess, const double up_guess,
-			const double rel_err = 1.e-3, const double abs_err = 1.e-6 );
  
     /**
      * @brief Function to count lines in a file, it uses std::count from the STL
