@@ -127,6 +127,22 @@ namespace sico {
     }
 
     /**
+     * @brief converts position in real space to position in periodic space [ 0, max )
+     *
+     * @param pos position in real space
+     *
+     * @param max maximum of the periodic space
+     *
+     * @return position in periodic space
+     */
+    inline int space ( const int pos, const int max ) {
+
+      // return pos; // euclidean
+      return ( pos + max ) % max; // periodic
+
+    }
+    
+    /**
      * @brief A periodic distance measure with periodicity in the interval [ 0, max )
      *
      * @param aa first integer coordinate
@@ -143,7 +159,7 @@ namespace sico {
 
       int dist = aa - bb;
       // return abs( dist ); // euclidean
-      return ( dist + max ) % max + max * int( dist / max ) ; // periodic
+      return space( dist, max ) + max * int( dist / max ); // periodic
 
     }
 

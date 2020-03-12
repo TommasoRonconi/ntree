@@ -91,14 +91,8 @@ std::vector< std::size_t > ntree< dim, depth >::find ( const std::vector< double
     int pos = int( ( coords[ ii ] - _boxmin ) * _expand );
 
     // set limits:
-
-    // idx_low[ ii ] = metric( pos, nrad, idx_max );
-    idx_low[ ii ] = ( pos - nrad + idx_max ) % idx_max; // periodic
-    // idx_low[ ii ] = ( pos - nrad ) >= 0 ? pos - nrad : 0; // euclidean
-
-    // idx_hgh[ ii ] = metric( pos, - nrad, idx_max ); // note: this one has problems!!!
-    idx_hgh[ ii ] = ( pos + nrad + idx_max ) % idx_max; // periodic
-    // idx_hgh[ ii ] = ( pos + nrad ); // euclidean
+    idx_low[ ii ] = space( pos - nrad, idx_max );
+    idx_hgh[ ii ] = space( pos + nrad, idx_max ); 
 
     // std::cout << pos << " [ "
     // 	      << idx_low[ ii ] << ", "
